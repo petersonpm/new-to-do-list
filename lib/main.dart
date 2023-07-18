@@ -81,26 +81,38 @@ class _HomeState extends State<Home> {
               child: ListView.builder(
                 padding: const EdgeInsets.only(top: 10.0),
                 itemCount: _toDolist.length,
-                itemBuilder: (context, int index) {
-                  return CheckboxListTile(
-                    title:Text (_toDolist[index] ["title"]),
-                    value: _toDolist[index] ["ok"],
-                    secondary: CircleAvatar(child: Icon(_toDolist[index] ["ok"] ?
-                    Icons.check : Icons.error),),
-                    onChanged: (c) {
-                      setState(() {
-                        _toDolist[index]["ok"] = c;
-                        _saveData();
-                      });
-                    } ,
-                  );
-                },
-              ),
+                itemBuilder: buildItem),
             ),
           ],
         )
     );
   }
+
+  Widget buildItem(context, int index) {
+    return Dismissible(key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
+    background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0.0),
+          child: Icon(Icons.delete, color: Colors.white,),
+        ),
+    ),
+    direction: DismissDirection.startToEnd,
+    child: CheckboxListTile(
+    title:Text (_toDolist[index] ["title"]),
+    value: _toDolist[index] ["ok"],
+    secondary: CircleAvatar(child: Icon(_toDolist[index] ["ok"] ?
+    Icons.check : Icons.error),),
+    onChanged: (c) {
+    setState(() {
+    _toDolist[index]["ok"] = c;
+    _saveData();
+    });
+    } ,
+    ),
+    );
+  }
+
 
   Future<File> _getFile() async {
     final directory = await getApplicationDocumentsDirectory();
