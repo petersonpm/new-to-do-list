@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     home: Home(),
   ));
 }
@@ -23,6 +23,17 @@ class _HomeState extends State<Home> {
 
   List _toDolist = [];
 
+
+  @override
+  void initState() {
+    super.initState();
+    _readData().then((data){
+      setState(() {
+        _toDolist = json.decode(data);
+      });
+    });
+  }
+
   void _addTodo(){
     setState(() {
       Map<String, dynamic> newToDo = Map();
@@ -30,6 +41,7 @@ class _HomeState extends State<Home> {
       _toDoController.text = "";
       newToDo["ok"] = false;
       _toDolist.add(newToDo);
+      _saveData();
     });
   }
 
@@ -38,7 +50,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
         appBar: AppBar(
           title: const Text("Lista de Tarefas"),
-          backgroundColor: Colors.pink,
+          backgroundColor: Color(0xFF123d70),
           centerTitle: true,
         ),
         body: Column(
@@ -50,14 +62,14 @@ class _HomeState extends State<Home> {
                  Expanded(
                     child: TextField(
                       controller: _toDoController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: "Nova Tarefa",
-                        labelStyle: TextStyle(color: Colors.pink),
+                        labelStyle: TextStyle(color:Color(0xFF123d70)),
                       ),
                     ),),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink,
+                      backgroundColor: const Color(0xFF123d70),
                     ),
                     child: Text("ADD"),
                     onPressed: _addTodo,
@@ -78,6 +90,7 @@ class _HomeState extends State<Home> {
                     onChanged: (c) {
                       setState(() {
                         _toDolist[index]["ok"] = c;
+                        _saveData();
                       });
                     } ,
                   );
