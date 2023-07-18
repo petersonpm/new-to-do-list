@@ -22,6 +22,8 @@ class _HomeState extends State<Home> {
   final _toDoController = TextEditingController();
 
   List _toDolist = [];
+  late Map<String, dynamic> _lastRemoved;
+  late int _lastRemovedPos;
 
 
   @override
@@ -43,6 +45,22 @@ class _HomeState extends State<Home> {
       _toDolist.add(newToDo);
       _saveData();
     });
+  }
+
+  Future<Null> refresh() async{
+    await Future.delayed(Duration(seconds: 1));
+
+    setState(() {
+      _toDolist.sort((a,b){
+        if(a['ok'] && !b["ok"]) return 1;
+        else if(!a ["ok"] && b["ok"]) return -1;
+        else return 0;
+      });
+
+      _saveData();
+    });
+
+    return null;
   }
 
   @override
@@ -78,10 +96,12 @@ class _HomeState extends State<Home> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 10.0),
-                itemCount: _toDolist.length,
-                itemBuilder: buildItem),
+              child: RefreshIndicator(
+                onRefresh: refresh,
+                child: ListView.builder(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    itemCount: _toDolist.length,
+                    itemBuilder: buildItem),),
             ),
           ],
         )
@@ -92,7 +112,7 @@ class _HomeState extends State<Home> {
     return Dismissible(key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
     background: Container(
         color: Colors.red,
-        child: Align(
+        child: const Align(
           alignment: Alignment(-0.9, 0.0),
           child: Icon(Icons.delete, color: Colors.white,),
         ),
@@ -110,6 +130,31 @@ class _HomeState extends State<Home> {
     });
     } ,
     ),
+      onDismissed: (direction){
+      setState(() {
+        _lastRemoved = Map.from(_toDolist[index]);
+        _lastRemovedPos = index;
+        _toDolist.removeAt(index);
+
+        _saveData();
+
+        final snack = SnackBar(
+          content:  Text("Tarefa \"${_lastRemoved["title"]}\" removida!"),
+          action: SnackBarAction(label: "Desfazer",
+              onPressed: (){
+                  setState(() {
+                    _toDolist.insert(_lastRemovedPos, _lastRemoved);
+                    _saveData();
+                  });
+              }),
+          duration: Duration(seconds: 2),
+        );
+
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(snack);
+
+        });
+      },
     );
   }
 
